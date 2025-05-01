@@ -218,3 +218,11 @@ debug_mode: false  # 调试模式
 ## 许可协议
 
 本项目采用MIT许可协议。
+
+## 致谢
+
+本项目基于或参考了以下开源项目:
+
+- [Astrbot](https://github.com/AstrBot/Astrbot)
+- [JMComic-Crawler-Python](https://github.com/AstrBot/JMComic-Crawler-Python)
+- [img2pdf](https://github.com/josch/img2pdf)
