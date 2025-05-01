@@ -218,5 +218,3 @@ debug_mode: false  # 调试模式
 ## 许可协议
 
 本项目采用MIT许可协议。
-
-@register("jm_cosmos", "禁漫宇宙", "全能型JM漫画下载与管理工具", "1.0.4", "https://github.com/yourusername/astrbot_plugin_jm_comic") 
