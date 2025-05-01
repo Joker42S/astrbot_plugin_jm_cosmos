@@ -1,3 +1,3 @@
-jmcomic=2.5.38
+jmcomic>=2.5.38
 PyYAML>=6.0
 curl_cffi>=0.6.0 
