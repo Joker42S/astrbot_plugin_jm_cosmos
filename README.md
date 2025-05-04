@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ```
 
 3. 重启AstrBot
-4. 使用`/jmdomain update`命令更新可用域名(在服务器上测试可能显示0个域名更新失败)
+4. 使用`/jmdomain update`命令更新可用域名
 
 ## 命令列表
 
