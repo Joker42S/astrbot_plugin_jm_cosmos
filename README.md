@@ -25,7 +25,7 @@ pip install -r requirements.txt
 ```
 
 3. 重启AstrBot
-4. 使用`/jmdomain update`命令更新可用域名
+4. 使用`/jmdomain update`命令更新可用域名(在服务器上测试可能显示0个域名更新失败)
 
 ## 命令列表
 
@@ -144,18 +144,8 @@ debug_mode: false  # 调试模式
 /jmdomain update
 ```
 
-### 2. "rich media transfer failed"错误
 
-可能原因：
-- PDF文件过大
-- QQ限制
-
-解决方法：
-```
-/jmimg 漫画ID 10
-```
-
-### 3. 403错误或IP被禁止访问
+### 2. 403错误或IP被禁止访问
 
 可能原因：
 - IP地区限制
@@ -166,7 +156,7 @@ debug_mode: false  # 调试模式
 /jmconfig proxy 你的代理地址
 ```
 
-### 4. 找不到漫画图片
+### 3. 找不到漫画图片
 
 可能原因：
 - 漫画目录命名不是ID格式
@@ -213,7 +203,7 @@ debug_mode: false  # 调试模式
 
 ## 开发者
 
-本插件由AstrBot社区开发维护。
+[@GEMILUXVII](https://github.com/GEMILUXVII)
 
 ## 许可协议
 
