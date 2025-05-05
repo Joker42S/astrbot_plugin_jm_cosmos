@@ -114,7 +114,7 @@ pip install -r requirements.txt
 - `_conf_schema.json` - 配置模式定义（用于AstrBot管理面板显示）
 - `requirements.txt` - 依赖库列表
 
-数据目录位于`AstrBot/data/plugin_data/astrbot_plugin_jm_cosmos/`：
+数据目录位于`AstrBot/data/plugin_data/jm_cosmos/`：
 - `downloads/` - 下载的漫画图片目录
 - `pdfs/` - 生成的PDF文件目录
 - `covers/` - 漫画封面缓存目录
