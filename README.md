@@ -32,8 +32,12 @@ pip install -r requirements.txt
 ```
 
 3. 重启AstrBot
+<<<<<<< HEAD
 4. 插件将自动加载，所有配置可在AstrBot管理面板的"插件配置"中进行设置
 5. 使用`/jmdomain update`命令更新可用域名
+=======
+4. 使用`/jmdomain update`命令更新可用域名
+>>>>>>> d7676d086b1e0458cddf9188bdad38191aec36ba
 
 ## 命令列表
 
