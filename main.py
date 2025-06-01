@@ -599,7 +599,7 @@ class ComicDownloader:
             logger.error(f"获取总页数失败: {str(e)}")
             return 0
 
-@register("jm_cosmos", "GEMILUXVII", "全能型JM漫画下载与管理工具", "1.0.6", "https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos")
+@register("jm_cosmos", "GEMILUXVII", "全能型JM漫画下载与管理工具", "1.0.7", "https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos")
 class JMCosmosPlugin(Star):
     """Cosmos插件主类"""
     
