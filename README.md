@@ -8,6 +8,9 @@
   <a href="https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-009688?style=for-the-badge" alt="License"></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-3.10+-3776AB?style=for-the-badge" alt="Python"></a>
   <a href="https://github.com/Soulter/AstrBot"><img src="https://img.shields.io/badge/ASTRBOT-3.4+-FF9800?style=for-the-badge" alt="AstrBot"></a>
+</div>
+
+<div align="center">
   <a href="https://pypi.org/project/jmcomic/"><img src="https://img.shields.io/badge/JMCOMIC-≥2.5.39-9C27B0?style=for-the-badge" alt="JMComic"></a>
   <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"><img src="https://img.shields.io/badge/UPDATED-2025.05.06-4CAF50?style=for-the-badge" alt="Updated"></a>
 </div>
