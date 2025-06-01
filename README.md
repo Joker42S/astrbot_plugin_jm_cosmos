@@ -4,15 +4,16 @@
 
 <br>
 <div align="center">
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"><img src="https://img.shields.io/badge/VERSION-v1.0.6-E91E63?style=for-the-badge" alt="Version"></a>
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_cloudrank/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-009688?style=for-the-badge" alt="License"></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-3.10+-3776AB?style=for-the-badge" alt="Python"></a>
-  <a href="https://github.com/Soulter/AstrBot"><img src="https://img.shields.io/badge/ASTRBOT-3.4+-FF9800?style=for-the-badge" alt="AstrBot"></a>
+  <a href="#-更新日志"><img src="https://img.shields.io/badge/VERSION-v1.0.6-E91E63?style=for-the-badge" alt="Version"></a>
+  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-009688?style=for-the-badge" alt="License"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"></a>
+  <a href="https://github.com/AstrBotDevs/AstrBot"><img src="https://img.shields.io/badge/AstrBot-Compatible-00BFA5?style=for-the-badge&logo=robot&logoColor=white" alt="AstrBot Compatible"></a>
 </div>
 
 <div align="center">
   <a href="https://pypi.org/project/jmcomic/"><img src="https://img.shields.io/badge/JMCOMIC-≥2.5.39-9C27B0?style=for-the-badge" alt="JMComic"></a>
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"><img src="https://img.shields.io/badge/UPDATED-2025.05.06-4CAF50?style=for-the-badge" alt="Updated"></a>
+  <a href="https://github.com/botuniverse/onebot-11"><img src="https://img.shields.io/badge/OneBotv11-AIOCQHTTP-FF5722?style=for-the-badge&logo=qq&logoColor=white" alt="OneBot v11 Support"></a>
+  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"><img src="https://img.shields.io/badge/UPDATED-2025.06.01-2196F3?style=for-the-badge" alt="Updated"></a>
 </div>
 
 ## 📝 介绍
@@ -74,6 +75,7 @@ JM-Cosmos 是一个基于 AstrBot 开发的 JM 漫画下载插件，支持漫画
 - `/jmconfig threads [数量]` - 设置最大下载线程数
 - `/jmconfig domain [域名]` - 添加 JM 漫画域名
 - `/jmconfig debug [on/off]` - 开启/关闭调试模式
+- `/jmconfig cover [on/off]` - 控制是否显示封面图片
 
 ### 域名管理
 
