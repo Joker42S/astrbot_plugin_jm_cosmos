@@ -1926,7 +1926,7 @@ class JMCosmosPlugin(Star):
         
         用法: /jmupdate
         '''
-        yield event.plain_result("JM-Cosmos插件 v1.0.6\n特性:\n 更换文件发送方式，修复文件消息缺少参数问题\n" + '\n'.join([f"- {domain}" for domain in self.config.domain_list]))   
+        yield event.plain_result("JM-Cosmos插件 v1.0.7\n特性:\n 更换文件发送方式，修复文件消息缺少参数问题\n" + '\n'.join([f"- {domain}" for domain in self.config.domain_list]))   
     @filter.command("jmhelp")
     async def show_help(self, event: AstrMessageEvent):
         """显示帮助信息"""
