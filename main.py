@@ -829,10 +829,10 @@ class JMCosmosPlugin(Star):
         
         comic_id = args[1]
         
-        if self.config.debug_mode:
-            yield event.plain_result(f"开始下载漫画ID: {comic_id}，请稍候...\n当前配置的最大线程数: {self.config.max_threads}")
-        else:
-            yield event.plain_result(f"开始下载漫画ID: {comic_id}，请稍候...")
+        # if self.config.debug_mode:
+        #     yield event.plain_result(f"开始下载漫画ID: {comic_id}，请稍候...\n当前配置的最大线程数: {self.config.max_threads}")
+        # else:
+        #     yield event.plain_result(f"开始下载漫画ID: {comic_id}，请稍候...")
         
         pdf_path = self.resource_manager.get_pdf_path(comic_id)
         abs_pdf_path = os.path.abspath(pdf_path)
@@ -897,7 +897,7 @@ class JMCosmosPlugin(Star):
         # ---- 函数主体 ----
         # 检查是否已经下载过
         if os.path.exists(abs_pdf_path):
-            yield event.plain_result(f"漫画已存在，直接发送...")
+            # yield event.plain_result(f"漫画已存在，直接发送...")
             async for result in send_the_file(abs_pdf_path, pdf_name):
                  yield result
             return
@@ -928,7 +928,7 @@ class JMCosmosPlugin(Star):
                  return
 
         # 发送PDF
-        yield event.plain_result(f" {comic_id} 下载完成，准备发送...") # 添加发送提示
+        # yield event.plain_result(f" {comic_id} 下载完成，准备发送...") # 添加发送提示
         async for result in send_the_file(abs_pdf_path, pdf_name):
             yield result
 
@@ -985,7 +985,7 @@ class JMCosmosPlugin(Star):
         用法: /jmrecommend
         '''
         client = self.client_factory.create_client()
-        yield event.plain_result("正在获取推荐漫画，请稍候...")
+        # yield event.plain_result("正在获取推荐漫画，请稍候...")
         
         try:
             # 尝试获取月榜，如果失败则使用备选方案
@@ -1018,7 +1018,7 @@ class JMCosmosPlugin(Star):
                 # 从排行榜中随机选择
                 ranking_list = list(ranking.iter_id_title())
                 album_id, title = random.choice(ranking_list)
-                yield event.plain_result(f"从排行榜中随机推荐: [{album_id}] {title}")
+                # yield event.plain_result(f"从排行榜中随机推荐: [{album_id}] {title}")
             
             # 获取漫画详情
             try:
@@ -1031,7 +1031,7 @@ class JMCosmosPlugin(Star):
                 return
             
             # 强制重新下载封面
-            yield event.plain_result(f"正在下载封面，ID: {album_id}...")
+            # yield event.plain_result(f"正在下载封面，ID: {album_id}...")
             success, result = await self.downloader.download_cover(album_id)
             
             if success:
@@ -1075,7 +1075,7 @@ class JMCosmosPlugin(Star):
         client = self.client_factory.create_client()
         search_query = ' '.join(f'+{k}' for k in keywords)
         
-        yield event.plain_result(f"正在搜索: {' '.join(keywords)}，请求序号: {order}...")
+        # yield event.plain_result(f"正在搜索: {' '.join(keywords)}，请求序号: {order}...")
         
         results = []
         try:
@@ -1092,8 +1092,11 @@ class JMCosmosPlugin(Star):
                         logger.info(f"第{page}页搜索结果:\n{result_info}")
                     
                     results.extend(page_results)
-                    if len(results) >= order:
-                        logger.info(f"已找到足够的结果: {len(results)} >= {order}")
+                    if len(results) >= order+4:
+                        logger.info(f"已找到足够的结果: {len(results)} >= {order+4}")
+                        break
+                    if len(page_results) < 80:
+                        logger.info(f"当前页结果不足80，已无更多结果")
                         break
                 except Exception as e:
                     error_msg = str(e)
@@ -1117,32 +1120,35 @@ class JMCosmosPlugin(Star):
                 yield event.plain_result(f"仅找到{len(results)}条结果，无法显示第{order}条:\n{result_list}")
                 return
             
-            # 获取指定序号的漫画ID和标题
-            album_id, title = results[order-1]
-            logger.info(f"请求序号 {order}，展示漫画: [{album_id}] {title}")
-            
-            try:
-                album = client.get_album_detail(album_id)
-            except Exception as e:
-                error_msg = str(e)
-                logger.error(f"获取漫画详情失败: {error_msg}")
-                if "文本没有匹配上字段" in error_msg:
-                    yield event.plain_result(f"获取漫画详情失败: 网站结构可能已更改，但搜索结果ID是: {album_id}，标题: {title}")
-                    return
-                else:
-                    yield event.plain_result(f"获取漫画详情失败: {error_msg}")
-                    return
-            
-            # 始终重新下载封面以确保正确
-            yield event.plain_result(f"搜索结果第{order}条: [{album_id}] {album.title}\n正在下载封面...")
-            success, cover_path = await self.downloader.download_cover(album_id)
-            if not success:
-                yield event.plain_result(f"封面下载失败: {cover_path}\n但搜索结果ID是: {album_id}，标题: {album.title}")
-                # 尝试使用预期的封面路径继续
-                cover_path = self.resource_manager.get_cover_path(album_id)
-            
-            # 显示漫画信息
-            yield event.chain_result(await self._build_album_message(client, album, album_id, cover_path))
+            for i in range(5):
+                # 获取指定序号的漫画ID和标题
+                if len(results) < order+i:
+                    break
+                album_id, title = results[order-1+i]
+                logger.info(f"请求序号 {order+i}，展示漫画: [{album_id}] {title}")
+                
+                try:
+                    album = client.get_album_detail(album_id)
+                except Exception as e:
+                    error_msg = str(e)
+                    logger.error(f"获取漫画详情失败: {error_msg}")
+                    if "文本没有匹配上字段" in error_msg:
+                        yield event.plain_result(f"获取漫画详情失败: 网站结构可能已更改，但搜索结果ID是: {album_id}，标题: {title}")
+                        return
+                    else:
+                        yield event.plain_result(f"获取漫画详情失败: {error_msg}")
+                        return
+                
+                # 始终重新下载封面以确保正确
+                # yield event.plain_result(f"搜索结果第{order}条: [{album_id}] {album.title}\n正在下载封面...")
+                success, cover_path = await self.downloader.download_cover(album_id)
+                if not success:
+                    yield event.plain_result(f"封面下载失败: {cover_path}\n但搜索结果ID是: {album_id}，标题: {album.title}")
+                    # 尝试使用预期的封面路径继续
+                    cover_path = self.resource_manager.get_cover_path(album_id)
+                
+                # 显示漫画信息
+                yield event.chain_result(await self._build_album_message(client, album, album_id, cover_path))
         except Exception as e:
             error_msg = str(e)
             logger.error(f"搜索漫画失败: {error_msg}")
@@ -1211,47 +1217,51 @@ class JMCosmosPlugin(Star):
                         logger.error(f"获取第{page}页失败: {str(e)}")
                     
                     # 提前终止条件
-                    if len(all_results) >= order:
+                    if len(all_results) >= order+4:
                         break
 
             if len(all_results) < order:
                 yield event.plain_result(f"作者 {author_name} 共有 {total_count} 部作品\n当前仅获取到 {len(all_results)} 部")
                 return
-            
-            album_id, _ = all_results[order-1]
-            
-            try:
-                album = client.get_album_detail(album_id)
-            except Exception as e:
-                error_msg = str(e)
-                if "文本没有匹配上字段" in error_msg:
-                    yield event.plain_result(f"获取漫画详情失败: 网站结构可能已更改，但搜索结果ID是: {album_id}")
-                    return
-                else:
-                    yield event.plain_result(f"获取漫画详情失败: {error_msg}")
-                    return
-            
-            cover_path = self.resource_manager.get_cover_path(album_id)
-            if not os.path.exists(cover_path):
-                success, result = await self.downloader.download_cover(album_id)
-                if not success:
-                    yield event.plain_result(f"⚠️ 封面下载失败: {result}")
-                    return
-                cover_path = result
-            
-            message = (
-                f"🎨 作者 {author_name} 共有 {total_count} 部作品\n"
-                f"📖: {album.title}\n"
-                f"🆔: {album_id}\n"
-                f"🏷️: {', '.join(album.tags[:3])}\n"
-                f"📅: {getattr(album, 'pub_date', '未知')}\n"
-                f"📃: {self.downloader.get_total_pages(client, album)}"
-            )
-            
-            yield event.chain_result([
-                Plain(text=message),
-                Image.fromFileSystem(cover_path)
-            ])
+
+            yield event.plain_result(f"作者 {author_name} 共有 {total_count} 部作品")
+            for i in range(5):
+                if len(all_results) < order+i:
+                    break
+                album_id, _ = all_results[order-1+i]
+                
+                try:
+                    album = client.get_album_detail(album_id)
+                except Exception as e:
+                    error_msg = str(e)
+                    if "文本没有匹配上字段" in error_msg:
+                        yield event.plain_result(f"获取漫画详情失败: 网站结构可能已更改，但搜索结果ID是: {album_id}")
+                        return
+                    else:
+                        yield event.plain_result(f"获取漫画详情失败: {error_msg}")
+                        return
+                
+                cover_path = self.resource_manager.get_cover_path(album_id)
+                if not os.path.exists(cover_path):
+                    success, result = await self.downloader.download_cover(album_id)
+                    if not success:
+                        yield event.plain_result(f"⚠️ 封面下载失败: {result}")
+                        return
+                    cover_path = result
+                
+                message = (
+                    # f"🎨 作者 {author_name} 共有 {total_count} 部作品\n"
+                    f"📖: {album.title}\n"
+                    f"🆔: {album_id}\n"
+                    f"🏷️: {', '.join(album.tags[:3])}\n"
+                    f"📅: {getattr(album, 'pub_date', '未知')}\n"
+                    f"📃: {self.downloader.get_total_pages(client, album)}"
+                )
+                
+                yield event.chain_result([
+                    Plain(text=message),
+                    Image.fromFileSystem(cover_path)
+                ])
         except Exception as e:
             error_msg = str(e)
             logger.error(f"搜索作者失败: {error_msg}")
@@ -1535,7 +1545,7 @@ class JMCosmosPlugin(Star):
             except:
                 pass
         
-        yield event.plain_result(f"开始下载漫画ID: {comic_id}的前{max_pages}页图片，请稍候...")
+        # yield event.plain_result(f"开始下载漫画ID: {comic_id}的前{max_pages}页图片，请稍候...")
         
         # 检查漫画文件夹是否存在
         comic_folder = self.resource_manager.get_comic_folder(comic_id)
