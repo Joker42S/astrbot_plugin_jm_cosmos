@@ -1,3 +1,12 @@
+# TODO:
+- [x] 精简消息，增加搜索结果数量
+- [ ] 搜索排序
+- [ ] 命令参数防呆
+- [ ] 合并转发结果
+- [ ] 添加对应配置项
+
+---
+
 # <div align="center">🪐 JM-Cosmos</div>
 
 <div align="center"><em>全能型 JM 漫画下载与管理工具</em></div>
