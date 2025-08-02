@@ -490,6 +490,16 @@ class ComicDownloader:
                 logger.info(f"封面下载成功: {cover_path}, 大小: {file_size} 字节")
                 if file_size < 1000:  # 如果文件太小，可能下载失败
                     logger.warning(f"封面文件大小异常，可能下载失败: {file_size} 字节")
+                #添加混淆
+                try:
+                    with open(cover_path, 'rb') as f:
+                        data = f.read()
+                    data = await _image_obfus(data)
+                    with open(cover_path, 'wb') as f:
+                        f.write(data)
+                    logger.info("封面图混淆成功")
+                except Exception as e:
+                    logger.error(f"封面图混淆失败: {str(e)}")
             else:
                 logger.error(f"封面下载后未找到文件: {cover_path}")
             
@@ -607,7 +617,8 @@ class JMCosmosPlugin(Star):
         super().__init__(context)
         self.plugin_name = "jm_cosmos"
         self.base_path = os.path.realpath(os.path.dirname(__file__))
-        
+        self.send_cover_separately = config.get("send_cover_separately", True)
+        self.search_order = JmMagicConstants.ORDER_BY_LIKE
         # 详细日志记录
         logger.info(f"Cosmos插件初始化，配置参数: {config}")
         
@@ -811,7 +822,7 @@ class JMCosmosPlugin(Star):
         )
         
         # 根据配置决定是否发送封面图片
-        if self.config.show_cover:
+        if self.config.show_cover and not self.send_cover_separately:
             return [Plain(text=message), Image.fromFileSystem(cover_path)]
         else:
             return [Plain(text=message)]
@@ -900,6 +911,7 @@ class JMCosmosPlugin(Star):
             # yield event.plain_result(f"漫画已存在，直接发送...")
             async for result in send_the_file(abs_pdf_path, pdf_name):
                  yield result
+            event.stop_event()
             return
         
         # 下载漫画
@@ -909,6 +921,7 @@ class JMCosmosPlugin(Star):
         
         if not success:
             yield event.plain_result(f"下载漫画失败: {msg}")
+            event.stop_event()
             return
         
         # 检查PDF是否生成成功
@@ -931,6 +944,7 @@ class JMCosmosPlugin(Star):
         # yield event.plain_result(f" {comic_id} 下载完成，准备发送...") # 添加发送提示
         async for result in send_the_file(abs_pdf_path, pdf_name):
             yield result
+        event.stop_event()
 
     @filter.command("jminfo")
     async def get_comic_info(self, event: AstrMessageEvent):
@@ -972,6 +986,8 @@ class JMCosmosPlugin(Star):
                 cover_path = result
             
             yield event.chain_result(await self._build_album_message(client, album, comic_id, cover_path))
+            if self.send_cover_separately:
+                yield event.chain_result([Image.fromFileSystem(cover_path)])
         except Exception as e:
             error_msg = str(e)
             logger.error(f"获取漫画信息失败: {error_msg}")
@@ -1044,12 +1060,32 @@ class JMCosmosPlugin(Star):
             
             # 显示漫画信息
             yield event.chain_result(await self._build_album_message(client, album, album_id, cover_path))
-            
+            if self.send_cover_separately:
+                yield event.chain_result([Image.fromFileSystem(cover_path)])
+
         except Exception as e:
             error_msg = str(e)
             logger.error(f"推荐漫画失败: {error_msg}")
             self._save_debug_info("recommend_error", traceback.format_exc())
             yield event.plain_result(f"推荐漫画失败: {error_msg}\n请尝试使用 #jmconfig clearcache 清理封面缓存后再试")
+
+    @filter.event_message_type(filter.EventMessageType.ALL)
+    async def handle_text_event(self, event: AstrMessageEvent):
+        '''简易命令
+        
+        用法: 今日本子 随机推荐本子
+        切换搜索排序 在按时间排序和按点赞数排序间切换
+        '''
+        if event.message_str == "今日本子":
+            async for result in self.recommend_comic(event):
+                yield result
+        elif event.message_str == "切换搜索排序":
+            if self.search_order == JmMagicConstants.ORDER_BY_LIKE:
+                self.search_order = JmMagicConstants.ORDER_BY_LATEST
+                yield event.plain_result("搜索排序已切换为：按时间排序")
+            else:
+                self.search_order = JmMagicConstants.ORDER_BY_LIKE
+                yield event.plain_result("搜索排序已切换为：按点赞数排序")
 
     @filter.command("jmsearch")
     async def search_comic(self, event: AstrMessageEvent):
@@ -1058,19 +1094,22 @@ class JMCosmosPlugin(Star):
         用法: /jmsearch [关键词] [序号]
         '''
         parts = event.message_str.strip().split()
-        if len(parts) < 3:
+        if len(parts) < 2:
             yield event.plain_result("格式: /jmsearch [关键词] [序号]")
             return
-        
+        if len(parts) < 3:
+            parts.append("1")
         *keywords, order = parts[1:]
         try:
             order = int(order)
             if order < 1:
                 yield event.plain_result("序号必须≥1")
+                event.stop_event()
                 return
         except:
-            yield event.plain_result("序号必须是数字")
-            return
+            keywords.append(order)
+            order = 1
+            logger.info("未检测到序号，默认使用1")
         
         client = self.client_factory.create_client()
         search_query = ' '.join(f'+{k}' for k in keywords)
@@ -1084,7 +1123,7 @@ class JMCosmosPlugin(Star):
             for page in range(1, max_pages + 1):
                 try:
                     logger.info(f"搜索第{page}页，当前结果数: {len(results)}，目标序号: {order}")
-                    search_result = client.search_site(search_query, page)
+                    search_result = client.search_site(search_query, page, order_by=self.search_order)
                     page_results = list(search_result.iter_id_title())
                     
                     if self.config.debug_mode:
@@ -1149,6 +1188,8 @@ class JMCosmosPlugin(Star):
                 
                 # 显示漫画信息
                 yield event.chain_result(await self._build_album_message(client, album, album_id, cover_path))
+                if self.send_cover_separately:
+                    yield event.chain_result([Image.fromFileSystem(cover_path)])
         except Exception as e:
             error_msg = str(e)
             logger.error(f"搜索漫画失败: {error_msg}")
@@ -1186,7 +1227,7 @@ class JMCosmosPlugin(Star):
                 first_page = client.search_site(
                     search_query=search_query,
                     page=1,
-                    order_by=JmMagicConstants.ORDER_BY_LATEST
+                    order_by=self.search_order
                 )
             except Exception as e:
                 error_msg = str(e)
@@ -1210,7 +1251,7 @@ class JMCosmosPlugin(Star):
                         page_result = client.search_site(
                             search_query=search_query,
                             page=page,
-                            order_by=JmMagicConstants.ORDER_BY_LATEST
+                            order_by=self.search_order
                         )
                         all_results.extend(list(page_result.iter_id_title()))
                     except Exception as e:
@@ -1968,3 +2009,50 @@ class JMCosmosPlugin(Star):
         logger.info("JM-Cosmos插件正在被卸载，执行资源清理...")
         # 这里可以添加资源清理代码，例如关闭连接、保存状态等
         pass
+
+
+async def _image_obfus(img_data):
+    """破坏图片哈希"""
+    from PIL import Image as ImageP
+    from io import BytesIO
+    import random
+
+    try:
+        with BytesIO(img_data) as input_buffer:
+            with ImageP.open(input_buffer) as img:
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
+
+                width, height = img.size
+                pixels = img.load()
+
+                points = []
+                for _ in range(3):
+                    while True:
+                        x = random.randint(0, width - 1)
+                        y = random.randint(0, height - 1)
+                        if (x, y) not in points:
+                            points.append((x, y))
+                            break
+
+                for x, y in points:
+                    r, g, b = pixels[x, y]
+
+                    r_change = random.choice([-1, 1])
+                    g_change = random.choice([-1, 1])
+                    b_change = random.choice([-1, 1])
+
+                    new_r = max(0, min(255, r + r_change))
+                    new_g = max(0, min(255, g + g_change))
+                    new_b = max(0, min(255, b + b_change))
+
+                    pixels[x, y] = (new_r, new_g, new_b)
+
+                with BytesIO() as output:
+                    img.save(output, format="PNG")
+                    return output.getvalue()
+
+    except Exception as e:
+        logger.warning(f"破坏图片哈希时发生错误: {str(e)}")
+        return img_data
+    
